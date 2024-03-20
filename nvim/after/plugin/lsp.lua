@@ -1,75 +1,49 @@
-local lsp = require('lsp-zero').preset({})
-
--- If you want insert `(` after select function or method item
-local cmp_autopairs = require('nvim-autopairs.completion.cmp')
-local cmp = require('cmp')
-cmp.event:on(
-  'confirm_done',
-  cmp_autopairs.on_confirm_done()
-)
-
-local handlers = require('nvim-autopairs.completion.handlers')
-
-cmp.event:on(
-  'confirm_done',
-  cmp_autopairs.on_confirm_done({
-    filetypes = {
-      -- "*" is a alias to all filetypes
-      ["*"] = {
-        ["("] = {
-          kind = {
-            cmp.lsp.CompletionItemKind.Function,
-            cmp.lsp.CompletionItemKind.Method,
-          },
-          handler = handlers["*"]
-        }
-      },
-      lua = {
-        ["("] = {
-          kind = {
-            cmp.lsp.CompletionItemKind.Function,
-            cmp.lsp.CompletionItemKind.Method
-          },
-          ---@param char string
-          ---@param item table item completion
-          ---@param bufnr number buffer number
-          ---@param rules table
-          ---@param commit_character table<string>
-          handler = function(char, item, bufnr, rules, commit_character)
-            -- Your handler function. Inpect with print(vim.inspect{char, item, bufnr, rules, commit_character})
-          end
-        }
-      },
-      -- Disable for tex
-      tex = false
-    }
-  })
-)
+local lsp = require('lsp-zero')
 
 lsp.on_attach(function(client, bufnr)
-  lsp.default_keymaps({buffer = bufnr})
+	lsp.default_keymaps({ buffer = bufnr})
 end)
 
-lsp.setup()
+lsp.set_sign_icons({
+})
 
--- You need to setup `cmp` after lsp-zero
+lsp.on_attach(function(client, bufnr)
+  lsp.default_keymaps({
+    buffer = bufnr,
+    preserve_mappings = false
+  })
+end)
+
+-- to learn how to use mason.nvim with lsp-zero
+-- read this: https://github.com/VonHeikemen/lsp-zero.nvim/blob/v3.x/doc/md/guides/integrate-with-mason-nvim.md
+require('mason').setup({})
+require('mason-lspconfig').setup({
+	ensure_installed = {
+		'tsserver',
+		'eslint',
+	},
+	handlers = {
+		lsp.default_setup,
+	},
+})
+
 local cmp = require('cmp')
 local cmp_action = require('lsp-zero').cmp_action()
 
 cmp.setup({
-  mapping = {
+  mapping = cmp.mapping.preset.insert({
     -- `Enter` key to confirm completion
     ['<CR>'] = cmp.mapping.confirm({select = false}),
 
-    ['<S-Tab>'] = cmp.mapping.select_next_item(cmp_select),
+    -- Ctrl+Space to trigger completion menu
+    ['<C-Space>'] = cmp.mapping.complete(),
+
     -- Navigate between snippet placeholder
-    ['<Tab>'] = cmp_action.luasnip_jump_forward(),
+    ['<C-f>'] = cmp_action.luasnip_jump_forward(),
     ['<C-b>'] = cmp_action.luasnip_jump_backward(),
-  },
-    sources = cmp.config.sources {
-          { name = "nvim_lsp", priority = 1000 },
-          { name = "luasnip", priority = 750 },
-          { name = "buffer", priority = 500 },
-          { name = "path", priority = 250 },
-}
+
+    -- Scroll up and down in the completion documentation
+    ['<C-u>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-d>'] = cmp.mapping.scroll_docs(4),
+  })
 })

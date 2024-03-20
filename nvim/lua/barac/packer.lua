@@ -4,84 +4,81 @@
 vim.cmd [[packadd packer.nvim]]
 
 return require('packer').startup(function(use)
-  -- Packer can manage itself
-  use 'wbthomason/packer.nvim'
+    -- Packer can manage itself
+    use 'wbthomason/packer.nvim'
 
-  use {
-  'nvim-telescope/telescope.nvim', tag = '0.1.1',
-  -- or                            , branch = '0.1.x',
-  requires = { {'nvim-lua/plenary.nvim'} }
-  }
+    use {
+        'nvim-telescope/telescope.nvim', tag = '0.1.5',
+        -- or                            , branch = '0.1.x',
+        requires = { {'nvim-lua/plenary.nvim'} }
+    }
 
-  use ("ellisonleao/gruvbox.nvim")
-  use('nvim-treesitter/nvim-treesitter', {run = ':TSUpdate'})
-  use('nvim-treesitter/playground')
-  use('theprimeagen/harpoon')
-  use('mbbill/undotree')
-  use('tpope/vim-fugitive')
+    -- Color scheme (rose pine)
+    use ({
+        'rose-pine/neovim',
+        as = 'rose-pine',
+        config = function()
+            vim.cmd('colorscheme rose-pine')
+        end
+    })
 
-  use {
-  'VonHeikemen/lsp-zero.nvim',
-  branch = 'v2.x',
-  requires = {
-    -- LSP Support
-    {'neovim/nvim-lspconfig'},             -- Required
-    {                                      -- Optional
-      'williamboman/mason.nvim',
-      run = function()
-        pcall(vim.cmd, 'MasonUpdate')
-      end,
-    },
-    {'williamboman/mason-lspconfig.nvim'}, -- Optional
+    -- Treesitter
+    use('nvim-treesitter/nvim-treesitter', {run = ':TSUpdate'})
+    use('nvim-treesitter/playground')
 
-    -- Autocompletion
-    {'hrsh7th/nvim-cmp'},     -- Required
-    {'hrsh7th/cmp-nvim-lsp'}, -- Required
-    {'L3MON4D3/LuaSnip'},     -- Required
-  }
- }
- use {
-  'nvim-lualine/lualine.nvim',
-  requires = { 'nvim-tree/nvim-web-devicons', opt = true }
- }
+    -- LSP
+    use {
+        'VonHeikemen/lsp-zero.nvim',
+        branch = 'v3.x',
+        requires = {
+            -- LSP Manage
+            {'williamboman/mason.nvim'},
+            {'williamboman/mason-lspconfig.nvim'},
 
- -- Installation
- use { 'L3MON4D3/LuaSnip' }
- use {
-  'hrsh7th/nvim-cmp',
-  config = function ()
-    require'cmp'.setup {
-    snippet = {
-      expand = function(args)
-        require'luasnip'.lsp_expand(args.body)
-      end
-    },
+            -- LSP Support
+            {'neovim/nvim-lspconfig'},
+            -- Autocompletion
+            {'hrsh7th/nvim-cmp'},
+            {'hrsh7th/cmp-nvim-lsp'},
+            {'L3MON4D3/LuaSnip'},
+        }
+    }
 
-    sources = {
-      { name = 'luasnip' },
-      -- more sources
-    },
-  }
-  end
- }
- use { 'saadparwaiz1/cmp_luasnip' }
+    -- Autopairs
+    use {
+        "windwp/nvim-autopairs",
+        config = function() require("nvim-autopairs").setup {} end
+    }
 
- use {
-  "rafamadriz/friendly-snippets",
-  config = function()
-    require("luasnip.loaders.from_vscode").lazy_load()
-  end,
- }
+    -- Java
+    use {
+        'nvim-java/nvim-java',
+        requires = {
+            {'nvim-java/lua-async-await'},
+            {'nvim-java/nvim-java-core'},
+            {'nvim-java/nvim-java-test'},
+            {'nvim-java/nvim-java-dap'},
+            {'MunifTanjim/nui.nvim'},
+            {'mfussenegger/nvim-dap'},
+        }
+    }
 
- use {
-	"windwp/nvim-autopairs",
-    config = function() require("nvim-autopairs").setup {
+    use 'nanotee/sqls.nvim'
 
-    } end
- }
+    require('lspconfig').sqls.setup{
+        on_attach = function(client, bufnr)
+            require('sqls').on_attach(client, bufnr)
+        end
+    }
 
- use "lukas-reineke/lsp-format.nvim"
-
- use "norcalli/nvim-colorizer.lua"
-
+    use {
+        "tpope/vim-dadbod",
+        requires = { 
+            "kristijanhusak/vim-dadbod-ui",  
+            "kristijanhusak/vim-dadbod-completion" 
+        },
+        config = function()
+            require("config.dadbod").setup()
+        end,
+    }
 end)
